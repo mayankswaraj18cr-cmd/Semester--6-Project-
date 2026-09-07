@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>E-Commerce Market Portal</title>
+<style>
+  :root{
+    --bg:#0d1520;
+    --panel:#141f30;
+    --panel2:#182640;
+    --accent:#f5a83f;
+    --accent2:#7ee0c3;
+    --text:#e8edf5;
+    --muted:#8ea0bd;
+    --border:#233350;
+    --danger:#ff6b6b;
+    --ok:#4ade80;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; padding:0; max-width:480px; margin:0 auto;
+    background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-tap-highlight-color:transparent;
+  }
+  header{
+    padding:18px 18px 14px; text-align:center;
+    background:linear-gradient(160deg,#152238,#0d1520);
+    border-bottom:1px solid var(--border);
+  }
+  header h1{margin:0 0 4px; font-size:17px; letter-spacing:.3px;}
+  header p{margin:0; color:var(--muted); font-size:12px;}
+  .badges{display:flex; gap:6px; justify-content:center; margin-top:10px; flex-wrap:wrap;}
+  .badge{
+    font-size:10.5px; padding:4px 9px; border-radius:20px;
+    background:var(--panel2); color:var(--accent2); border:1px solid var(--border);
+  }
+  .nav-tabs{
+    display:flex; gap:6px; padding:10px 16px; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    background:#0f1929; border-bottom:1px solid var(--border); position:sticky; top:0; z-index:10;
+  }
+  .nav-tab{
+    flex:0 0 auto; font-size:12px; padding:8px 13px; border-radius:8px;
+    background:var(--panel2); color:var(--muted); border:1px solid var(--border); white-space:nowrap;
+  }
+  .nav-tab.active{background:var(--accent); color:#2a1600; border-color:var(--accent); font-weight:700;}
+  main{padding:16px;}
+  .view{display:none;}
+  .view.active{display:block;}
+  .card{
+    background:var(--panel); border:1px solid var(--border); border-radius:14px;
+    padding:16px; margin-bottom:14px;
+  }
+  .card h2{
+    font-size:13px; text-transform:uppercase; letter-spacing:.6px;
+    color:var(--accent2); margin:0 0 12px;
+  }
+  input[type=text],input[type=email],input[type=password],input[type=number]{
+    width:100%; padding:11px; border-radius:9px; border:1px solid var(--border);
+    background:#0f1929; color:var(--text); font-size:14px; margin-bottom:10px;
+  }
+  input:focus{outline:2px solid var(--accent); border-color:var(--accent);}
+  label{font-size:11.5px; color:var(--muted); display:block; margin-bottom:4px;}
+  button{
+    -webkit-appearance:none; border:none; cursor:pointer;
+    font-family:inherit; font-weight:600;
+  }
+  .btn-primary{
+    width:100%; padding:12px; border-radius:9px; background:var(--accent);
+    color:#2a1600; font-size:14px;
+  }
+  .btn-primary:active{transform:scale(.98);}
+  .btn-secondary{
+    padding:9px 14px; border-radius:8px; background:var(--panel2); color:var(--text);
+    font-size:12.5px; border:1px solid var(--border);
+  }
+  .btn-danger{color:var(--danger);}
+  .product-grid{display:flex; flex-direction:column; gap:10px;}
+  .product-item{
+    display:flex; gap:12px; background:var(--panel2); border:1px solid var(--border);
+    border-radius:10px; padding:10px; align-items:center;
+  }
+  .product-icon{
+    width:52px; height:52px; border-radius:8px; background:#0f1929; display:flex;
+    align-items:center; justify-content:center; font-size:22px; flex-shrink:0;
+  }
+  .product-info{flex:1; min-width:0;}
+  .product-info .pname{font-size:13.5px; font-weight:700; color:var(--text);}
+  .product-info .pprice{font-size:13px; color:var(--accent); font-weight:700; margin-top:2px;}
+  .product-info .pqty{font-size:10.5px; color:var(--muted); margin-top:2px;}
+  .add-btn{
+    padding:8px 12px; border-radius:8px; background:var(--accent); color:#2a1600;
+    font-size:11.5px; white-space:nowrap;
+  }
+  .cart-item{
+    display:flex; justify-content:space-between; align-items:center; padding:10px 0;
+    border-bottom:1px solid var(--border);
+  }
+  .cart-item:last-child{border-bottom:none;}
+  .cart-item .cname{font-size:13px; font-weight:600;}
+  .cart-item .cprice{font-size:12px; color:var(--muted);}
+  .qty-ctrl{display:flex; align-items:center; gap:8px;}
+  .qty-ctrl button{
+    width:26px; height:26px; border-radius:6px; background:var(--panel2); color:var(--text);
+    border:1px solid var(--border); font-size:14px;
+  }
+  .cart-total{
+    display:flex; justify-content:space-between; padding-top:12px; margin-top:8px;
+    border-top:1px solid var(--border); font-size:15px; font-weight:700;
+  }
+  .status-msg{
+    text-align:center; padding:10px; border-radius:9px; font-size:12.5px; margin-top:10px; display:none;
+  }
+  .status-msg.show{display:block;}
+  .status-ok{background:rgba(74,222,128,.12); color:var(--ok); border:1px solid rgba(74,222,128,.3);}
+  .status-err{background:rgba(255,107,107,.12); color:var(--danger); border:1px solid rgba(255,107,107,.3);}
+  table.data{width:100%; border-collapse:collapse; font-size:11.5px;}
+  table.data th{
+    background:var(--panel2); color:var(--accent2); text-align:left; padding:7px 6px;
+    font-size:10px; text-transform:uppercase;
+  }
+  table.data td{padding:7px 6px; border-bottom:1px solid var(--border);}
+  table.data tr:last-child td{border-bottom:none;}
+  .order-card{
+    background:var(--panel2); border:1px solid var(--border); border-radius:9px;
+    padding:10px; margin-bottom:8px;
+  }
+  .order-card .oid{font-size:11px; color:var(--muted);}
+  .order-card .oname{font-size:13px; font-weight:700; margin-top:2px;}
+  .order-card .ostatus{
+    display:inline-block; margin-top:6px; font-size:10px; padding:2px 8px; border-radius:10px;
+    background:rgba(74,222,128,.15); color:var(--ok); font-weight:700;
+  }
+  pre.code{
+    background:#0a1220; border:1px solid var(--border); border-radius:10px;
+    padding:12px; font-size:10px; line-height:1.5; overflow-x:auto;
+    font-family:ui-monospace,Menlo,Consolas,monospace; color:#c9d6ea; margin:0;
+  }
+  .kw{color:#f5a83f;} .tp{color:#7ee0c3;} .cm{color:#5b7291;} .str{color:#c9a5f0;}
+  .toggle-row{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
+  .pill-btn{
+    font-size:11px; padding:5px 10px; border-radius:8px; background:var(--panel2);
+    color:var(--accent2); border:1px solid var(--border);
+  }
+  .arch-flow{display:flex; flex-direction:column; align-items:center; gap:0;}
+  .arch-node{
+    background:var(--panel2); border:1px solid var(--border); border-radius:9px;
+    padding:9px 20px; font-size:12.5px; font-weight:700; color:var(--text); text-align:center; width:100%;
+  }
+  .arch-arrow{color:var(--accent); font-size:15px; padding:2px 0;}
+  .app-list{list-style:none; padding:0; margin:0; display:flex; flex-wrap:wrap; gap:6px;}
+  .app-list li{
+    font-size:11.5px; padding:6px 10px; border-radius:8px; background:var(--panel2);
+    color:var(--text); border:1px solid var(--border);
+  }
+  footer{
+    text-align:center; padding:18px 16px 26px; font-size:11px; color:var(--muted);
+    border-top:1px solid var(--border);
+  }
+  footer a{color:var(--accent);}
+  .empty-note{text-align:center; color:var(--muted); font-size:12.5px; padding:20px 0;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>E-Commerce Market Portal</h1>
+  <p>Web Technologies — HTML · CSS · JS · PHP · MySQL &nbsp;•&nbsp; GSSIPU Semester 6</p>
+  <div class="badges">
+    <span class="badge">Full-Stack Web Application</span>
+    <span class="badge">Intermediate</span>
+  </div>
+</header>
+
+<div class="nav-tabs" id="navTabs">
+  <button class="nav-tab active" data-view="login">Login</button>
+  <button class="nav-tab" data-view="products">Products</button>
+  <button class="nav-tab" data-view="cart">Cart</button>
+  <button class="nav-tab" data-view="orders">Orders</button>
+  <button class="nav-tab" data-view="admin">Admin</button>
+</div>
+
+<main>
+
+  <!-- LOGIN VIEW -->
+  <div class="view active" id="view-login">
+    <div class="card">
+      <h2>▸ User Login</h2>
+      <label>Email</label>
+      <input type="email" id="loginEmail" placeholder="you@example.com" value="mayank@store.com">
+      <label>Password</label>
+      <input type="password" id="loginPassword" placeholder="••••••••" value="pass123">
+      <button class="btn-primary" id="loginBtn">Login</button>
+      <div class="status-msg" id="loginStatus"></div>
+    </div>
+    <div class="card">
+      <h2>▸ System Architecture</h2>
+      <div class="arch-flow">
+        <div class="arch-node">CUSTOMER</div>
+        <div class="arch-arrow">↓</div>
+        <div class="arch-node">WEBSITE (HTML/CSS/JS)</div>
+        <div class="arch-arrow">↓</div>
+        <div class="arch-node">PHP BACKEND</div>
+        <div class="arch-arrow">↓</div>
+        <div class="arch-node">MYSQL DATABASE</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRODUCTS VIEW -->
+  <div class="view" id="view-products">
+    <div class="card">
+      <h2>▸ Browse Products</h2>
+      <div class="product-grid" id="productGrid"></div>
+    </div>
+  </div>
+
+  <!-- CART VIEW -->
+  <div class="view" id="view-cart">
+    <div class="card">
+      <h2>▸ Shopping Cart</h2>
+      <div id="cartItems"></div>
+      <div class="cart-total" id="cartTotal" style="display:none;">
+        <span>Total</span><span id="cartTotalAmount">₹0</span>
+      </div>
+      <button class="btn-primary" id="checkoutBtn" style="display:none;">Checkout</button>
+      <div class="status-msg" id="checkoutStatus"></div>
+    </div>
+  </div>
+
+  <!-- ORDERS VIEW -->
+  <div class="view" id="view-orders">
+    <div class="card">
+      <h2>▸ Track Orders</h2>
+      <div id="ordersList"></div>
+    </div>
+  </div>
+
+  <!-- ADMIN VIEW -->
+  <div class="view" id="view-admin">
+    <div class="card">
+      <h2>▸ Admin — Inventory</h2>
+      <table class="data" id="adminTable"></table>
+    </div>
+    <div class="card">
+      <h2>▸ Add New Product</h2>
+      <label>Product Name</label>
+      <input type="text" id="newProdName" placeholder="e.g. Bluetooth Speaker">
+      <label>Price (₹)</label>
+      <input type="number" id="newProdPrice" placeholder="e.g. 1999">
+      <label>Quantity</label>
+      <input type="number" id="newProdQty" placeholder="e.g. 25">
+      <button class="btn-primary" id="addProdBtn">Add Product</button>
+    </div>
+    <div class="card">
+      <div class="toggle-row">
+        <h2 style="margin:0;">▸ PHP Login Backend</h2>
+        <button class="pill-btn" id="togglePhpBtn">Show</button>
+      </div>
+      <div id="phpBox" style="display:none;">
+<pre class="code"><span class="kw">&lt;?php</span>
+
+$conn = mysqli_connect(
+<span class="str">"localhost"</span>, <span class="str">"root"</span>, <span class="str">""</span>, <span class="str">"ecommerce"</span>);
+
+$email=$_POST[<span class="str">'email'</span>];
+$password=$_POST[<span class="str">'password'</span>];
+
+$sql=<span class="str">"SELECT * FROM users
+WHERE email='$email'
+AND password='$password'"</span>;
+
+$result=mysqli_query($conn,$sql);
+
+<span class="kw">if</span>(mysqli_num_rows($result)&gt;0)
+{
+    echo <span class="str">"Login Success"</span>;
+}
+<span class="kw">else</span>
+{
+    echo <span class="str">"Invalid Login"</span>;
+}
+
+<span class="kw">?&gt;</span></pre>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  E-Commerce Market Portal — Full-Stack Web Development Project<br>
+  GSSIPU Semester 6 · Mayank Swaraj<br>
+  <a href="https://github.com/mayankswaraj18cr-cmd" target="_blank">GitHub</a> ·
+  <a href="https://linkedin.com/in/mayank-swaraj-4b84b6410" target="_blank">LinkedIn</a>
+</footer>
+
+<script>
+// ---- Simulated backend state (mirrors MySQL tables) ----
+let products = [
+  { id: 1, name: 'Mobile Phone', price: 15000, qty: 12, icon: '📱' },
+  { id: 2, name: 'Bluetooth Headphones', price: 1999, qty: 30, icon: '🎧' },
+  { id: 3, name: 'Laptop Bag', price: 899, qty: 45, icon: '🎒' },
+  { id: 4, name: 'Smart Watch', price: 3499, qty: 18, icon: '⌚' },
+];
+let cart = []; // {productId, qty}
+let orders = [];
+let nextOrderId = 501;
+let nextProductId = 5;
+let loggedInUser = null;
+
+const users = [{ email: 'mayank@store.com', password: 'pass123', name: 'Mayank' }];
+
+// ---- Navigation ----
+document.getElementById('navTabs').addEventListener('click', (e) => {
+  const btn = e.target.closest('.nav-tab');
+  if(!btn) return;
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const view = btn.dataset.view;
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(`view-${view}`).classList.add('active');
+  if(view === 'products') renderProducts();
+  if(view === 'cart') renderCart();
+  if(view === 'orders') renderOrders();
+  if(view === 'admin') renderAdmin();
+});
+
+// ---- Login ----
+document.getElementById('loginBtn').addEventListener('click', () => {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const statusEl = document.getElementById('loginStatus');
+  const user = users.find(u => u.email === email && u.password === password);
+  if(user){
+    loggedInUser = user;
+    statusEl.textContent = `Login Success — Welcome, ${user.name}`;
+    statusEl.className = 'status-msg show status-ok';
+    setTimeout(() => {
+      document.querySelector('.nav-tab[data-view="products"]').click();
+    }, 500);
+  } else {
+    statusEl.textContent = 'Invalid Login — check email/password';
+    statusEl.className = 'status-msg show status-err';
+  }
+});
+
+// ---- Products ----
+function renderProducts(){
+  const grid = document.getElementById('productGrid');
+  grid.innerHTML = '';
+  products.forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'product-item';
+    div.innerHTML = `
+      <div class="product-icon">${p.icon}</div>
+      <div class="product-info">
+        <div class="pname">${p.name}</div>
+        <div class="pprice">₹${p.price.toLocaleString('en-IN')}</div>
+        <div class="pqty">${p.qty} in stock</div>
+      </div>
+      <button class="add-btn" data-id="${p.id}">Add to Cart</button>
+    `;
+    grid.appendChild(div);
+  });
+  grid.querySelectorAll('.add-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = parseInt(btn.dataset.id);
+      const existing = cart.find(c => c.productId === id);
+      if(existing) existing.qty++;
+      else cart.push({ productId: id, qty: 1 });
+      btn.textContent = 'Added ✓';
+      setTimeout(() => { btn.textContent = 'Add to Cart'; }, 900);
+    });
+  });
+}
+
+// ---- Cart ----
+function renderCart(){
+  const container = document.getElementById('cartItems');
+  const totalRow = document.getElementById('cartTotal');
+  const checkoutBtn = document.getElementById('checkoutBtn');
+  document.getElementById('checkoutStatus').classList.remove('show');
+
+  if(cart.length === 0){
+    container.innerHTML = '<div class="empty-note">Your cart is empty. Browse products to add items.</div>';
+    totalRow.style.display = 'none';
+    checkoutBtn.style.display = 'none';
+    return;
+  }
+
+  container.innerHTML = '';
+  let total = 0;
+  cart.forEach(c => {
+    const p = products.find(x => x.id === c.productId);
+    const lineTotal = p.price * c.qty;
+    total += lineTotal;
+    const div = document.createElement('div');
+    div.className = 'cart-item';
+    div.innerHTML = `
+      <div>
+        <div class="cname">${p.name}</div>
+        <div class="cprice">₹${p.price.toLocaleString('en-IN')} × ${c.qty} = ₹${lineTotal.toLocaleString('en-IN')}</div>
+      </div>
+      <div class="qty-ctrl">
+        <button data-action="dec" data-id="${p.id}">−</button>
+        <span>${c.qty}</span>
+        <button data-action="inc" data-id="${p.id}">+</button>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+
+  container.querySelectorAll('[data-action]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = parseInt(btn.dataset.id);
+      const item = cart.find(c => c.productId === id);
+      if(btn.dataset.action === 'inc') item.qty++;
+      else {
+        item.qty--;
+        if(item.qty <= 0) cart = cart.filter(c => c.productId !== id);
+      }
+      renderCart();
+    });
+  });
+
+  totalRow.style.display = 'flex';
+  document.getElementById('cartTotalAmount').textContent = `₹${total.toLocaleString('en-IN')}`;
+  checkoutBtn.style.display = 'block';
+}
+
+document.getElementById('checkoutBtn').addEventListener('click', () => {
+  const statusEl = document.getElementById('checkoutStatus');
+  if(!loggedInUser){
+    statusEl.textContent = 'Please log in before checkout.';
+    statusEl.className = 'status-msg show status-err';
+    return;
+  }
+  cart.forEach(c => {
+    const p = products.find(x => x.id === c.productId);
+    orders.push({
+      orderId: nextOrderId++,
+      productName: p.name,
+      qty: c.qty,
+      total: p.price * c.qty,
+      status: 'Confirmed',
+    });
+    p.qty = Math.max(0, p.qty - c.qty);
+  });
+  cart = [];
+  statusEl.textContent = 'Order Confirmed! Check the Orders tab to track it.';
+  statusEl.className = 'status-msg show status-ok';
+  renderCart();
+});
+
+// ---- Orders ----
+function renderOrders(){
+  const list = document.getElementById('ordersList');
+  if(orders.length === 0){
+    list.innerHTML = '<div class="empty-note">No orders yet. Place an order from your cart.</div>';
+    return;
+  }
+  list.innerHTML = '';
+  orders.slice().reverse().forEach(o => {
+    const div = document.createElement('div');
+    div.className = 'order-card';
+    div.innerHTML = `
+      <div class="oid">Order #${o.orderId}</div>
+      <div class="oname">${o.productName} × ${o.qty} — ₹${o.total.toLocaleString('en-IN')}</div>
+      <span class="ostatus">${o.status}</span>
+    `;
+    list.appendChild(div);
+  });
+}
+
+// ---- Admin ----
+function renderAdmin(){
+  const table = document.getElementById('adminTable');
+  let html = '<tr><th>Product</th><th>Price</th><th>Qty</th><th></th></tr>';
+  products.forEach(p => {
+    html += `<tr>
+      <td>${p.name}</td>
+      <td>₹${p.price.toLocaleString('en-IN')}</td>
+      <td>${p.qty}</td>
+      <td><button class="btn-secondary btn-danger" data-del="${p.id}" style="padding:5px 9px; font-size:10.5px;">Delete</button></td>
+    </tr>`;
+  });
+  table.innerHTML = html;
+  table.querySelectorAll('[data-del]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = parseInt(btn.dataset.del);
+      products = products.filter(p => p.id !== id);
+      renderAdmin();
+    });
+  });
+}
+
+document.getElementById('addProdBtn').addEventListener('click', () => {
+  const name = document.getElementById('newProdName').value.trim();
+  const price = parseFloat(document.getElementById('newProdPrice').value);
+  const qty = parseInt(document.getElementById('newProdQty').value);
+  if(!name || isNaN(price) || isNaN(qty)) return;
+  products.push({ id: nextProductId++, name, price, qty, icon: '🛍️' });
+  document.getElementById('newProdName').value = '';
+  document.getElementById('newProdPrice').value = '';
+  document.getElementById('newProdQty').value = '';
+  renderAdmin();
+});
+
+document.getElementById('togglePhpBtn').addEventListener('click', () => {
+  const box = document.getElementById('phpBox');
+  const btn = document.getElementById('togglePhpBtn');
+  const show = box.style.display === 'none';
+  box.style.display = show ? 'block' : 'none';
+  btn.textContent = show ? 'Hide' : 'Show';
+});
+
+// init
+renderProducts();
+</script>
+
+</body>
+</html>
